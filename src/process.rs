@@ -4,9 +4,9 @@ use std::str;
 use crate::processor;
 #[derive(Debug)]
 pub struct Process{
-    processor_usage_with_children:f32,
-    rss:String,
-    pid:&'static str
+    pub processor_usage_with_children:f32,
+    pub rss:String,
+    pub pid:&'static str
 }
 impl Process{
     pub fn new(pid:&'static str) -> Self{
