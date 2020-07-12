@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["zhanglei.sec <zhanglei.sec@bytedance.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
+description = "A light tool to get process/processors/memory/disks info."
 [lib]
 name = "lightbird"
 path = "src/lib.rs"
