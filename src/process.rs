@@ -1,8 +1,9 @@
 use std::fs::File;
 use std::io::Read;
 use std::str;
+use serde::{Deserialize, Serialize};
 use crate::processor;
-#[derive(Debug)]
+#[derive(Debug,Serialize,Deserialize)]
 pub struct Process{
     pub processor_usage_with_children:f32,
     pub rss:String,

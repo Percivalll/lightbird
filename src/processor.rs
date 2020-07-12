@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Read;
 use std::str;
+use serde::{Deserialize, Serialize};
 #[derive(Copy, Clone, Debug)]
 pub struct ProcessStat {
     user: i64,
@@ -15,7 +16,7 @@ impl ProcessStat{
     pub fn get_total(&self)->i64{self.user + self.nice + self.system + self.idle + self.iowait + self.irq+self.softirq}
     pub fn get_work(&self)->i64{self.user + self.nice + self.system + self.irq+self.softirq}
 }
-#[derive(Clone, Debug)]
+#[derive(Debug,Serialize, Deserialize)]
 pub struct Processor {
     pub index: i32,
     pub vendor_id: String,
