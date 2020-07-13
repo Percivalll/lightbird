@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io::Read;
 use std::str;
 use serde::{Deserialize, Serialize};
-#[derive(Copy, Clone, Debug)]
-pub struct ProcessStat {
+#[derive(Debug)]
+pub(super) struct ProcessStat {
     user: i64,
     nice: i64,
     system: i64,
@@ -16,7 +16,7 @@ impl ProcessStat{
     pub fn get_total(&self)->i64{self.user + self.nice + self.system + self.idle + self.iowait + self.irq+self.softirq}
     pub fn get_work(&self)->i64{self.user + self.nice + self.system + self.irq+self.softirq}
 }
-#[derive(Debug,Serialize, Deserialize)]
+#[derive(Debug,Serialize, Deserialize,Default)]
 pub struct Processor {
     pub index: i32,
     pub vendor_id: String,
@@ -25,7 +25,7 @@ pub struct Processor {
     pub cache_size: String,
     pub usage: f32,
 }
-pub fn get_processors_stat() -> Result<Vec<ProcessStat>,String> {
+pub(super) fn get_processor_stat() -> Result<Vec<ProcessStat>,String> {
     let mut stat_file = match File::open("/proc/stat"){
         Ok(o)=>{o}
         Err(err)=>{return Err(err.to_string())}
@@ -49,7 +49,7 @@ pub fn get_processors_stat() -> Result<Vec<ProcessStat>,String> {
     }
     Ok(stat_vec)
 }
-pub fn get_total_processor_stat() -> Result<ProcessStat,String> {
+pub(super) fn get_total_processor_stat() -> Result<ProcessStat,String> {
     let mut stat_file = match File::open("/proc/stat"){
         Ok(o)=>{o}
         Err(err)=>{return Err(err.to_string())}
@@ -72,12 +72,12 @@ pub fn get_total_processor_stat() -> Result<ProcessStat,String> {
     }
     Err("Can't find the cpu line.".to_string())
 }
-pub fn get_processors() -> Result<Vec<Processor>,String> {
-    let start = get_processors_stat()?;
+pub fn get_processor() -> Result<Vec<Processor>,String> {
+    let start = get_processor_stat()?;
     std::thread::sleep(std::time::Duration::from_millis(1000));
-    let stop = get_processors_stat()?;
+    let stop = get_processor_stat()?;
     if start.len()!=stop.len(){
-        return Err("Process stat numbers isn't the same".to_string())
+        return Err("Process stat numbers isn't the same.".to_string())
     }
     let mut usage=Vec::new();
     for i in 0..start.len(){
