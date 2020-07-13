@@ -70,11 +70,11 @@ fn find_type_for_name(name: &str) -> String {
         _ => return String::from("Unknown"),
     }
 }
-pub fn get_disk() -> Vec<Disk> {
+pub fn get_disk() -> Result<Vec<Disk>,String> {
     let mut file = File::open("/proc/mounts").unwrap();
     let mut content = String::new();
     file.read_to_string(&mut content);
-    content
+    Ok(content
         .lines()
         .map(|line| {
             let line = line.trim();
@@ -125,7 +125,7 @@ pub fn get_disk() -> Vec<Disk> {
             available_space: available,
             genre: find_type_for_name(fs_spec),
         }})
-        .collect()
+        .collect())
 }
 #[test]
 fn get_disk_test() {

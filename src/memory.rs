@@ -12,7 +12,7 @@ pub struct Memory {
     pub swap_free: i64,
 }
 
-pub fn get_memory_stat() -> Result<Memory, String> {
+pub fn get_memory() -> Result<Memory, String> {
     let mut file = match File::open("/proc/meminfo") {
         Ok(o) => o,
         Err(err) => return Err(err.to_string()),
@@ -83,5 +83,5 @@ pub fn get_memory_stat() -> Result<Memory, String> {
 }
 #[test]
 fn get_memory_stat_test(){
-    println!("{:?}",get_memory_stat());
+    println!("{:?}",get_memory());
 }
