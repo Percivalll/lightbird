@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Read;
-#[derive(Default,Debug)]
+use serde::{Deserialize, Serialize};
+#[derive(Default,Debug,Serialize, Deserialize)]
 pub struct Memory {
     pub total: i64,
     pub free: i64,
