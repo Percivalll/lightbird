@@ -1,14 +1,14 @@
+use libc::statvfs;
+use serde::{Deserialize, Serialize};
+use std::ffi::CString;
 use std::ffi::OsStr;
 use std::fs;
 use std::fs::File;
 use std::io::Read;
+use std::mem;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
-use libc::statvfs;
-use std::mem;
-use std::ffi::CString;
-use serde::{Deserialize, Serialize};
-#[derive(Debug,Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Disk {
     name: String,
     file_system: String,
@@ -70,7 +70,7 @@ fn find_type_for_name(name: &str) -> String {
         _ => return String::from("Unknown"),
     }
 }
-pub fn get_disk() -> Result<Vec<Disk>,String> {
+pub fn get_disk() -> Result<Vec<Disk>, String> {
     let mut file = File::open("/proc/mounts").unwrap();
     let mut content = String::new();
     file.read_to_string(&mut content);
@@ -108,8 +108,8 @@ pub fn get_disk() -> Result<Vec<Disk>,String> {
             fs_spec.starts_with("sunrpc"))
         })
         .map(|(fs_spec, fs_file, fs_vfstype)| {
-            let mut total=0;
-            let mut available=0;
+            let mut total = 0;
+            let mut available = 0;
             unsafe {
                 let mut stat: statvfs = mem::zeroed();
                 if statvfs(CString::new("/").unwrap().as_ptr(), &mut stat) == 0 {
@@ -118,18 +118,19 @@ pub fn get_disk() -> Result<Vec<Disk>,String> {
                 }
             }
             Disk {
-            name: fs_spec.to_string(),
-            mount_point: fs_file.to_string(),
-            file_system: fs_vfstype.to_string(),
-            total_space: total,
-            available_space: available,
-            genre: find_type_for_name(fs_spec),
-        }})
+                name: fs_spec.to_string(),
+                mount_point: fs_file.to_string(),
+                file_system: fs_vfstype.to_string(),
+                total_space: total,
+                available_space: available,
+                genre: find_type_for_name(fs_spec),
+            }
+        })
         .collect())
 }
 #[test]
 fn get_disk_test() {
-    for i in get_disk() {
-        println!("{:?}", i);
+    for i in 0..10000 {
+        get_disk();
     }
 }

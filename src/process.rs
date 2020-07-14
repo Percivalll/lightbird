@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 use std::str;
+use std::time;
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Process {
     pub processor_usage_with_children: f32,
@@ -10,7 +11,7 @@ pub struct Process {
     pub rss: String,
     pub pid: String,
 }
-pub fn get_process(pid: &'static str) -> Result<Process, String> {
+pub fn get_process(pid: &'static str,interval:time::Duration) -> Result<Process, String> {
     let mut process = Process::default();
     let mut file = match File::open(String::from("/proc/") + pid + "/status") {
         Ok(o) => o,
@@ -42,9 +43,9 @@ pub fn get_process(pid: &'static str) -> Result<Process, String> {
             _ => {}
         }
     }
-    let processor_usage=get_process_usage(pid)?;
-    process.processor_usage=processor_usage.0;
-    process.processor_usage_with_children=processor_usage.1;
+    let processor_usage = get_process_usage(pid,interval)?;
+    process.processor_usage = processor_usage.0;
+    process.processor_usage_with_children = processor_usage.1;
     Ok(process)
 }
 fn get_process_cpu_usage_with_children(pid: &'static str) -> Result<(u64, u64), String> {
@@ -68,10 +69,10 @@ fn get_process_cpu_usage_with_children(pid: &'static str) -> Result<(u64, u64), 
             + fields[16].parse::<u64>().unwrap(),
     ))
 }
-fn get_process_usage(pid: &'static str) -> Result<(f32, f32), String> {
+fn get_process_usage(pid: &'static str,interval:time::Duration) -> Result<(f32, f32), String> {
     let total_start = processor::get_total_processor_stat()?;
     let process_start = get_process_cpu_usage_with_children(pid)?;
-    let processor_num = processor::get_processor().unwrap().len();
+    let processor_num = processor::get_processor(interval).unwrap().len();
     let total_stop = processor::get_total_processor_stat()?;
     let process_stop = get_process_cpu_usage_with_children(pid)?;
     Ok((
@@ -82,6 +83,8 @@ fn get_process_usage(pid: &'static str) -> Result<(f32, f32), String> {
     ))
 }
 #[test]
-fn get_process_test(){
-    println!("{:?}",get_process("1300"));
+fn get_process_test() {
+    for i in 0..10 {
+        println!("{:?}", get_process("1300",time::Duration::from_millis(1000)));
+    }
 }

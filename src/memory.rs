@@ -1,7 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
-use serde::{Deserialize, Serialize};
-#[derive(Default,Debug,Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Memory {
     pub total: i64,
     pub free: i64,
@@ -19,11 +19,11 @@ pub fn get_memory() -> Result<Memory, String> {
         Err(err) => return Err(err.to_string()),
     };
     let mut content = String::new();
-    match file.read_to_string(&mut content){
-        Ok(_)=>{}
-        Err(err)=>{return Err(err.to_string())}
+    match file.read_to_string(&mut content) {
+        Ok(_) => {}
+        Err(err) => return Err(err.to_string()),
     };
-    let mut memory=Memory::default();
+    let mut memory = Memory::default();
     for i in content.split("\n") {
         let fields: Vec<&str> = i.split(":").collect();
         match fields[0].trim() {
@@ -57,7 +57,7 @@ pub fn get_memory() -> Result<Memory, String> {
                     .parse::<i64>()
                     .unwrap();
             }
-            "SReclaimable"=>{
+            "SReclaimable" => {
                 memory.buffer_or_cached += String::from(fields[1].trim())
                     .replace(" kB", "")
                     .parse::<i64>()
@@ -83,6 +83,8 @@ pub fn get_memory() -> Result<Memory, String> {
     Ok(memory)
 }
 #[test]
-fn get_memory_stat_test(){
-    println!("{:?}",get_memory());
+fn get_memory_stat_test() {
+    for i in 0..10000 {
+        println!("{:?}", get_memory());
+    }
 }
