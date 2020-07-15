@@ -84,7 +84,5 @@ pub fn get_memory() -> Result<Memory, String> {
 }
 #[test]
 fn get_memory_stat_test() {
-    for i in 0..10000 {
         println!("{:?}", get_memory());
-    }
 }

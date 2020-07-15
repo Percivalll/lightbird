@@ -130,7 +130,5 @@ pub fn get_disk() -> Result<Vec<Disk>, String> {
 }
 #[test]
 fn get_disk_test() {
-    for i in 0..10000 {
         get_disk();
-    }
 }
