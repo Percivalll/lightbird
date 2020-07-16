@@ -103,7 +103,7 @@ pub fn refresh_all(processors:&mut Vec<Processor>)->Result<(), String> {
         processors[i].latest_stat=stats[i];
         let total_diff=processors[i].latest_stat.get_total()-processors[i].last_stat.get_total();
         if total_diff==0{
-            processors[i].usage=-1.0;
+            processors[i].usage=0.0;
             continue;
         }
         processors[i].usage=(processors[i].latest_stat.get_work()-processors[i].last_stat.get_work())as f32/total_diff as f32;
@@ -156,7 +156,7 @@ pub fn new() -> Result<Vec<Processor>, String> {
     }
     for i in 0..processors.len(){
         processors[i].latest_stat=stats[i];
-        processors[i].usage=-1.0;
+        processors[i].usage=0.0;
     }
     Ok(processors)
 }
@@ -166,7 +166,7 @@ fn processor_test(){
     std::thread::sleep(std::time::Duration::from_secs(1));
     refresh_all(&mut processors).unwrap();
     for i in processors{
-        assert_ne!(i.usage,-1.0 as f32);
+        assert_ne!(i.usage,0.0 as f32);
     }
 
 }

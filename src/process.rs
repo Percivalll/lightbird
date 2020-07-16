@@ -44,8 +44,8 @@ impl Process {
             self.latest_processor_stat.get_total() - self.last_processor_stat.get_total();
         let processors = processor::new()?;
         if total_diff == 0 {
-            self.processor_usage = -1.0;
-            self.processor_usage_with_children = -1.0;
+            self.processor_usage = 0.0;
+            self.processor_usage_with_children = 0.0;
         } else {
             self.processor_usage = processors.len() as f32
                 * (self.latest_stat.get_total() - self.last_stat.get_total()) as f32
@@ -92,8 +92,8 @@ pub fn new(pid: &'static str) -> Result<Process, String> {
     }
     process.latest_stat = get_process_stat(pid.to_owned())?;
     process.latest_processor_stat = processor::get_total_processor_stat()?;
-    process.processor_usage = -1.0;
-    process.processor_usage_with_children = -1.0;
+    process.processor_usage = 0.0;
+    process.processor_usage_with_children = 0.0;
     Ok(process)
 }
 fn get_process_stat(pid: String) -> Result<ProcessStat, String> {
@@ -120,8 +120,8 @@ fn process_test() {
         let mut process = new("1300").unwrap();
         std::thread::sleep(std::time::Duration::from_secs(45));
         process.refresh().unwrap();
-        assert_ne!(process.processor_usage, -1.0);
-        assert_ne!(process.processor_usage_with_children, -1.0);
+        assert_ne!(process.processor_usage, 0.0);
+        assert_ne!(process.processor_usage_with_children, 0.0);
         println!("{:?}", process.processor_usage)
     }
 }
