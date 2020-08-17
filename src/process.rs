@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 use std::str;
-use std::time;
 #[derive(Debug, Default, Copy, Clone)]
 struct ProcessStat {
     utime: u64,
@@ -55,12 +54,25 @@ impl Process {
                     - self.last_stat.get_total_with_children()) as f32
                 / total_diff as f32;
         }
+        let (rss, pid) = get_rss_pid(self.pid.as_str())?;
+        self.rss = rss;
+        self.pid = pid;
         return Ok(());
     }
 }
 pub fn new(pid: &'static str) -> Result<Process, String> {
     let mut process = Process::default();
-    let mut file = match File::open(String::from("/proc/") + pid + "/status") {
+    let (rss, pid) = get_rss_pid(pid)?;
+    process.rss = rss;
+    process.pid = pid;
+    process.latest_stat = get_process_stat(process.pid.to_owned())?;
+    process.latest_processor_stat = processor::get_total_processor_stat()?;
+    process.processor_usage = 0.0;
+    process.processor_usage_with_children = 0.0;
+    Ok(process)
+}
+fn get_rss_pid(idf: &str) -> Result<(String, String), String> {
+    let mut file = match File::open(String::from("/proc/") + idf + "/status") {
         Ok(o) => o,
         Err(err) => return Err(err.to_string()),
     };
@@ -69,6 +81,9 @@ pub fn new(pid: &'static str) -> Result<Process, String> {
         Ok(o) => o,
         Err(err) => return Err(err.to_string()),
     };
+    println!("{:?}", content);
+    let mut rss = "".to_owned();
+    let mut pid = "".to_owned();
     for i in content
         .lines()
         .map(|line| {
@@ -79,22 +94,18 @@ pub fn new(pid: &'static str) -> Result<Process, String> {
             );
             (k, v)
         })
-        .filter(|(k, v)| match *k {
+        .filter(|(k, _)| match *k {
             "VmRSS" | "Pid" => true,
             _ => false,
         })
     {
         match i.0 {
-            "VmRSS" => process.rss = i.1.replace(" kB", ""),
-            "Pid" => process.pid = i.1.to_string(),
+            "VmRSS" => rss = i.1.replace(" kB", ""),
+            "Pid" => pid = i.1.to_string(),
             _ => {}
         }
     }
-    process.latest_stat = get_process_stat(pid.to_owned())?;
-    process.latest_processor_stat = processor::get_total_processor_stat()?;
-    process.processor_usage = 0.0;
-    process.processor_usage_with_children = 0.0;
-    Ok(process)
+    Ok((rss, pid))
 }
 fn get_process_stat(pid: String) -> Result<ProcessStat, String> {
     let mut content = String::new();
@@ -116,12 +127,9 @@ fn get_process_stat(pid: String) -> Result<ProcessStat, String> {
 }
 #[test]
 fn process_test() {
-    loop {
-        let mut process = new("1300").unwrap();
-        std::thread::sleep(std::time::Duration::from_secs(45));
-        process.refresh().unwrap();
-        assert_ne!(process.processor_usage, 0.0);
-        assert_ne!(process.processor_usage_with_children, 0.0);
-        println!("{:?}", process.processor_usage)
-    }
+    let mut process = new("self").unwrap();
+    println!("{:?}", process);
+    std::thread::sleep(std::time::Duration::from_secs(10));
+    process.refresh().unwrap();
+    println!("{:?}", process);
 }
